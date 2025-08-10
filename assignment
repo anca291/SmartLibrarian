@@ -1,0 +1,101 @@
+Assignment: Smart Librarian - AI cu RAG + Tool Completion
+
+Scop:
+Construieste un chatbot AI care recomanda carti in functie de interesele utilizatorului folosind OpenAI + RAG (ChromaDB),
+iar apoi completeaza recomandarea cu un rezumat detaliat obtinut printr-un tool separat
+
+Cerinte:
+1. Creeaza o baza de datte de rezumate (book_summaries). Include minim 10 carti:
+
+    Format recomandat:
+    ## Title: 1984
+    A dystopian story about a totalitarian society controlled by surveillance, propaganda, and thought of police.
+    Winston Smith, the propaganda and thought of police, Winston Smith, the protagonist, secretly rebels against
+    the system in search of truth and freedom.
+
+    ## Tile: The Hobbit
+    Rezumat scurt (3-5 randuri). Include temele principale (ex: prietenie, aventura)
+
+2. Incarca fisierul in ChromaDB sau alta DB la alegere (NU OpenAI vector store)
+Foloseste un embeddings de la OpenAI (text-embedding-3-small sau similar).
+Creeaza un retriever care permite cautarea semantica dupa tema sau context
+
+3. Construieste un chatbot AI (CLI sau Steamlit) si integreaza OpenAI GPT
+Chatbotul trebuie sa:
+    - Primeasca intrebari de tip:
+        -> Vreau o carte despre prietenie si magie
+        -> Ce recomanzi pentru cineva care iubeste povesti de razboi?
+    - Gaseasca o potrivire in vector store (RAG)
+    - Raspunda conversational cu o recomandare de carte
+
+4. Adauga un tool: get_summary_by_title(title:str)
+Creeaza o functie Python care returneaza rezumatul complet pentru un titlu exact.
+Se poate folosi un dictionar, JSON, sau alta sursa locala
+
+    Model de dictionar:
+    book_summaries_dict = {
+        "The Hobbit" : (
+
+        ),
+        "1984" : (
+
+        )
+        }
+
+    def get_summary_by_title (title: str) ->str:
+        #cauta titlul si returneaza rezumatul complet
+
+    Inregistreaza functia ca tool (function calling) in OpenAI Chat API
+
+Dupa ce LLM face o recomandare, apeleaza automat tool-ul cu titlul respectiv si afiseaza rezultatul complet dupa recomandare
+
+## Optionale ##
+5. Adauga un filtru de limbaj nepotrivit
+Daca utilizatorul trimite mesaje cu cuvinte ofensatoare, chatbotul trebuie sa raspunda politicos si sa nu trimita promptul la LLM
+
+6. Text to Speech
+Ofera utilizatorului posibilitatea de a asculta recomandarile si rezumatele cartilor.
+Adauga o optiune in interfata (CLI sau Streamlit) prin care utilizatorul poate apasa
+Dupa ce chatbotul ofera o recomandare + rezumat detaliat, optional converteste textul audio si salveaza fisierul sau il reda direct
+
+7. Speech to text
+Permite utilizatorului sa interactioneze cu chatbotul vocal prin comenzi vorbite. Adauga un buton/mod "voice mode" in interfata
+Daca este activ, aplicatia:
+    - asculta microfonul utilizatorului
+    - transcrie in text
+    - trimite intrebarea transcrisa catre chatbot
+
+8. Image Generation
+Genereaza o imagine reprezentativa pentru carea recomandata, poate fi o coperta sugestiva, o scena, sau o tema din carte
+afiseaza imaginea generata
+
+9. Backend and Frontend UI
+Streamlit poate sa fie destul de greoi ca si interfata, folositi un framework de frontend
+pentru a contrui interfata grafica care sa fie accesibila din browser (folosind localhost) si care sa fie integrata cu
+API-urile expuse de backend scris in Python (ex React, Angular, Vue) si va puteti folosi de tool-uri precum ChatGPT sau Github Copilot
+
+
+Ce trebuie livrat:
+    - Fisier book_summaries cu 10+ carti
+    - Codul sursa Python si ce alte limbaje si dependinte s-au folosit, avand incluse:
+        - initializare vector store
+        - tool get_summary_by_title()
+        - chat complet cu interactiunile LLM + tool
+    - UI simplu: CLI sau Streamlit (optional)
+    - README.md cu pasii de build si de rulare
+
+
+Exemple de intrebari pentru testare
+    "Vreau o care des[re libertate si control social"
+    "Ce-mi recomanzi daca iubesc povestile fantastice?"
+    "Ce este 1984?"
+
+Notes
+    - Punctele de mai sus sunt doar orientative, scopul este sa vedem un proiect care sa foloseasca RAG cu un vector store
+    care nu a fost prezentat in trainings si ca se face un tools calling pentru extra detalii
+    - Daca nu reusiti cu alt vector store, e acceptabil sa folositi si openai vector store dar vrem sa mentionati care au fost
+    probeleme si ce ati incercat pentru a le rezolva
+    - nu va blocati in formate, tipuri de fisiere, dictionare, dupa cum spuneam indicatiile sunt orientative
+    - puteti folosi chatgpt sa generati documentele necesare, copilot pentru coding
+    - vrem sa intelegeti codul si flowul pentru acest proiect
+
