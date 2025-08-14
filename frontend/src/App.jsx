@@ -1,26 +1,38 @@
 import { useState } from "react";
 import ChatWindow from "./components/ChatWindow";
-import InputBox from "./components/InputBox";
-import { sendMessage } from "./services/api";
 import "./styles/main.css";
 
 export default function App() {
   const [messages, setMessages] = useState([]);
 
-  const handleSend = async (userMessage) => {
+  const handleSend = (userMessage) => {
+    if (!userMessage?.trim()) return;
     setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
 
-    const botResponse = await sendMessage(userMessage);
-
-    const fullText = `${botResponse.recommendation}\n\nRezumat complet:\n${botResponse.full_summary}`;
-    setMessages((prev) => [...prev, { sender: "bot", text: fullText }]);
+    // Simulare răspuns bot
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "Eroare la server. Rezumat complet:" }
+      ]);
+    }, 500);
   };
 
   return (
     <div className="app">
-      <h1>Smart Librarian</h1>
-      <ChatWindow messages={messages} />
-      <InputBox onSend={handleSend} />
+      {/* Monitorul cu chat */}
+      <ChatWindow messages={messages} onSend={handleSend} />
+
+      {/* Biroul */}
+      <div className="desk" />
+
+      {/* Tastatura și mouse-ul */}
+      <div className="peripherals">
+        <div className="keyboard" />
+        <div className="mouse">
+          <span className="cable" />
+        </div>
+      </div>
     </div>
   );
 }

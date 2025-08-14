@@ -1,167 +1,266 @@
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Open+Sans:wght@400;600&display=swap');
 
-.app {
-  min-height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+/* ===== culori ===== */
+:root{
+  --wall: #f1ead5;
+  --wood: #7a543a;
+  --beige: #d6c8a2;
+  --beige-shadow: #c3b48c;
+  --bezel-dark: #2f2f2f;
+  --screen: #fff5dc;
+
+  /* controlling layout */
+  --shelf: clamp(240px, 18vw, 320px);   /* lățimea fiecărui dulap */
+  --deskH: 14vh;                        /* înălțimea biroului */
+  --gapX: 24px;                         /* spațiu între raft și monitor */
+}
+
+*{ box-sizing:border-box; }
+html,body,#root{ height:100%; }
+body{
+  margin:0;
+  font-family:'Open Sans',sans-serif;
+  background:var(--wall);
+  overflow:hidden; /* fără scroll pe pagină */
+}
+
+/* ===== scena pe GRID: [raft] [monitor] [raft] / [birou jos] ===== */
+.app{
+  position:relative;
+  height:100vh;
+  width:100%;
+  display:grid;
+  grid-template-columns: var(--shelf) 1fr var(--shelf);
+  grid-template-rows: 1fr var(--deskH);
+  align-items:center;                   /* centrează vertical rândul 1 */
+  justify-items:center;                 /* centrează orizontal col 2 */
+  overflow:hidden;
+}
+
+/* rafturi laterale (fundal complet) */
+.app::before,
+.app::after{
+  content:"";
+  position:absolute;
+  top:0; bottom:0;
+  width:var(--shelf);
+  z-index:0;
   background:
-    url("data:image/svg+xml;utf8,<svg width='200' height='100' xmlns='http://www.w3.org/2000/svg'><rect x='0' y='0' width='200' height='100' fill='%23f5f3e7'/><rect x='10' y='20' width='30' height='60' fill='%23e9c46a'/><rect x='50' y='10' width='20' height='80' fill='%238d99ae'/><rect x='80' y='30' width='40' height='50' fill='%23c44536'/><rect x='130' y='15' width='30' height='70' fill='%232b2d42'/><rect x='170' y='40' width='20' height='40' fill='%238d99ae'/></svg>") repeat;
-  background-size: 200px 100px;
-  color: #2b2d42;
-  padding: 8px 0;
-  border-radius: 8px;
+    linear-gradient(90deg, transparent 18%, rgba(0,0,0,0.04) 18% 19%, transparent 19%),
+    repeating-linear-gradient(180deg,
+      #e49b5b 0 46px, #e9c46a 46px 92px, #8d99ae 92px 138px, #c44536 138px 184px,
+      #2b2d42 184px 230px, #8d99ae 230px 276px),
+    repeating-linear-gradient(#7a543a, #7a543a 24px, #684530 24px 27px);
+  box-shadow: inset -12px 0 28px rgba(0,0,0,.18);
+}
+.app::before{ left:0; }
+.app::after { right:0; transform:scaleX(-1); }
+
+/* ===== monitor CRT (în col 2, rând 1) ===== */
+.monitor{
+  grid-column:2;
+  grid-row:1;
+  z-index:3;                            /* peste periferice și birou */
+  width: min(1100px, calc(100vw - (var(--shelf) * 2) - (var(--gapX) * 2)));
+  margin: 0 var(--gapX);
+  background:var(--beige);
+  border-radius:28px;
+  padding:28px 26px 20px;
+  box-shadow:0 12px 28px rgba(0,0,0,.18), inset 0 0 0 2px rgba(0,0,0,.08);
 }
 
-.header {
-  width: 100%;
-  text-align: center;
-  font-family: 'Merriweather', serif;
-  font-size: 2.2rem;
-  color: #c44536;
-  font-weight: bold;
-  letter-spacing: 2px;
-  margin-bottom: 16px;
-  text-shadow: 0 2px 8px #e9c46a;
+.monitor-title{
+  text-align:center;
+  font-family:'Merriweather',serif;
+  font-size: clamp(28px, 3vw, 36px);
+  color:#243041;
+  margin:4px 0 10px;
 }
 
-.message {
-  display: flex;
-  margin: 8px 0;
+/* bezel + ecran */
+.bezel{
+  background:#ceb98e;
+  border-radius:18px;
+  padding:18px;
+  box-shadow: inset 0 0 0 8px #b8a77e, inset 0 0 0 18px #594f3a, 0 4px 8px rgba(0,0,0,.08);
 }
 
-.message.user {
-  justify-content: flex-end;
+.screen{
+  background:var(--screen);
+  border-radius:14px;
+  border:6px solid var(--bezel-dark);
+  /* înălțime calculată ca să nu lovească biroul, dar să fie mare */
+  height: min(720px, calc(100vh - var(--deskH) - 180px));
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-shadow: inset 0 0 24px rgba(0,0,0,.12);
 }
 
-.message.bot {
-  justify-content: flex-start;
+/* ===== chat ===== */
+.messages-container{
+  flex:1;
+  overflow:auto;                        /* scroll DOAR aici */
+  padding:18px 18px 10px 18px;
 }
+.chat-placeholder{ color:#8d99ae; text-align:center; margin-top:90px; }
 
-.bubble {
-  padding: 10px 16px;
-  border-radius: 16px;
-  max-width: 70%;
-  font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+.message{ display:flex; margin:8px 0; }
+.message.user{ justify-content:flex-end; }
+.message.bot{ justify-content:flex-start; }
+
+.bubble{
+  max-width:70%;
+  padding:10px 16px;
+  border-radius:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
 }
+.message.user .bubble{ background:#e3e9f7; border:2px solid #8d99ae; border-bottom-right-radius:0;color: #000 }
+.message.bot  .bubble{ background:#f7e6c4; border:2px solid #e9c46a; border-bottom-left-radius:0; color: #000}
 
-.message.user .bubble {
-  background: #e3e9f7;
-  color: #2b2d42;
-  border-bottom-right-radius: 0;
-  border: 2px solid #8d99ae;
-}
-
-.message.bot .bubble {
-  background: #f7e6c4;
-  color: #c44536;
-  border-bottom-left-radius: 0;
-  border: 2px solid #e9c46a;
-}
-
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: 12px;
-  padding-right: 8px;
-}
-
-.input-row {
-  width: 100%;
-  max-width: 700px; /* Match chat-window max-width */
-  margin: 0 auto;
-}
-
-.input-box {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.input-box input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #8d99ae;
-  background: #f5f3e7;
-  color: #2b2d42; /* Dark, readable text */
-  background: #fffbe6; /* Optional: light background for contrast */
+/* input */
+.screen-input{
+  display:flex; gap:10px;
+  padding:12px 14px 16px;
+  background:rgba(0,0,0,.04);
+  border-top:1px solid rgba(0,0,0,.08);
 
 }
-
-.input-box button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  background: #2b2d42;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s;
+.screen-input input{
+  flex:1; padding:10px 12px; border-radius:8px; border:1px solid #b4b4b4; background:#fffaf0; color: #000
+}
+.screen-input button{
+  border:none; border-radius:10px; padding:10px 18px; background:#243041; color:#fff; font-weight:600;
 }
 
-.input-box button:hover {
-  background: #8d99ae;
-}
-.chat-window {
-  position: relative;
-  height: 400px;
-  display: flex;
-  flex-direction: column;
-  border: 8px solid #222; /* Monitor bezel */
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(60, 60, 60, 0.18), 0 0 0 12px #444 inset;
-  padding: 20px;
-  width: 100%;
-  max-width: 700px;
-  background: #fffbe6;
-  margin: 0 auto 32px auto;
-  z-index: 1;
+/* picior monitor */
+.monitor-stand{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-30px; width:120px; height:30px; background:#48423b;
+  border-radius:14px 14px 22px 22px; box-shadow:0 6px 18px rgba(0,0,0,.22);
 }
 
-/* Library detail: add a subtle bookshelf shadow at the top */
-
-.chat-window::before {
-  content: "";
-  display: block;
-  position: absolute;
-  top: -12px;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 8px;
-  background: repeating-linear-gradient(
-    90deg,
-    #e9c46a 0 16px,
-    #8d99ae 16px 32px
-  );
-  border-radius: 4px;
-  opacity: 0.4;
+/* ===== birou (pe rândul 2, pe toată lățimea) ===== */
+.desk{
+  grid-column:1 / -1;
+  grid-row:2;
+  width:100%;
+  height:var(--deskH);
+  background: linear-gradient(#8a5d3f, #7a543a 60%, #714a32);
+  box-shadow: inset 0 8px 0 rgba(0,0,0,.12), 0 -4px 12px rgba(0,0,0,.12);
+  z-index:1;
 }
 
-
-.chat-window::after {
-  content: "";
-  display: block;
-  position: absolute;
-  left: 50%;
-  bottom: -32px;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 24px;
-  background: #444;
-  border-radius: 12px 12px 24px 24px;
-  box-shadow: 0 4px 16px rgba(60,60,60,0.18);
-  z-index: 0;
+/* ===== periferice (în fața biroului, sub monitor) ===== */
+.peripherals{
+  grid-column:2;
+  grid-row:2;
+  justify-self:center;
+  align-self:end;           /* aliniază la baza biroului */
+  transform: translateY(-8px); /* mai aproape de marginea de sus a biroului */
+  display:flex;
+  gap:28px;
+  align-items:center;
+  z-index:2;
 }
 
-.chat-placeholder {
-  color: #8d99ae;
-  font-size: 1.1rem;
-  text-align: center;
-  opacity: 0.6;
-  margin-top: 120px;
+.keyboard{
+  width: clamp(520px, 60vw, 820px);
+  height:68px;
+  background:var(--beige);
+  border-radius:14px;
+  box-shadow: inset 0 -4px 0 var(--beige-shadow), 0 6px 14px rgba(0,0,0,.18);
+  position:relative;
+}
+.keyboard::before{
+  content:"";
+  position:absolute; left:12px; right:12px; top:10px; bottom:12px;
+  border-radius:10px;
+  background:
+    repeating-linear-gradient(90deg,#cfc19b 0 36px, transparent 36px 38px),
+    repeating-linear-gradient(#e7dbb8 0 16px, #d6c79f 16px 32px);
+}
+
+.mouse{
+  width:108px; height:68px; background:var(--beige);
+  border-radius:50px;
+  box-shadow: inset 0 -4px 0 var(--beige-shadow), 0 6px 14px rgba(0,0,0,.18);
+  position:relative;
+}
+.mouse::before{
+  content:"";
+  position:absolute; left:50%; top:10px; transform:translateX(-50%);
+  width:4px; height:30px; background:#b8aa86; border-radius:2px;
+}
+.mouse .cable{
+  position:absolute; left:-140px; top:14px; width:140px; height:26px;
+  border-top:3px solid #4b4338; border-radius:50% 0 0 0;
+}
+/* =========================
+   RESPONSIVE BREAKPOINTS
+   Adaugă de aici în jos la finalul fișierului tău
+   ========================= */
+
+/* ≥1600px — desktop mare */
+@media (min-width: 1600px) {
+  :root { --shelf: clamp(260px, 18vw, 360px); --deskH: 14vh; }
+  .monitor { width: min(1200px, calc(100vw - (var(--shelf) * 2) - 64px)); }
+  .screen  { height: min(780px, calc(100vh - var(--deskH) - 200px)); }
+  .keyboard { width: clamp(640px, 58vw, 980px); height: 72px; }
+  .mouse { width: 118px; height: 74px; }
+  .monitor-title { font-size: clamp(32px, 2.4vw, 40px); }
+}
+
+/* 1024–1599px — laptop/clasic */
+@media (min-width: 1024px) and (max-width: 1599px) {
+  :root { --shelf: clamp(220px, 18vw, 300px); --deskH: 14vh; }
+  .monitor { width: min(1100px, calc(100vw - (var(--shelf) * 2) - 48px)); }
+  .screen  { height: min(720px, calc(100vh - var(--deskH) - 180px)); }
+  .keyboard { width: clamp(520px, 56vw, 820px); height: 68px; }
+  .mouse { width: 108px; height: 68px; }
+}
+
+/* 768–1023px — tabletă (îngustăm rafturile, reducem biroul) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root { --shelf: clamp(140px, 16vw, 200px); --deskH: 12vh; }
+  .monitor { width: calc(100vw - (var(--shelf) * 2) - 32px); }
+  .screen  { height: min(68vh, calc(100vh - var(--deskH) - 160px)); }
+  .peripherals { transform: translateY(-6px); gap: 20px; }
+  .keyboard { width: clamp(420px, 66vw, 640px); height: 60px; }
+  .mouse { width: 92px; height: 58px; }
+  .monitor-title { font-size: clamp(26px, 3.2vw, 32px); }
+}
+
+/* ≤767px — telefon (micșorăm tot, rafturi foarte înguste) */
+@media (max-width: 767px) {
+  /* rafturi înguste ca să lăsăm loc monitorului */
+  :root { --shelf: 56px; --deskH: 11vh; }
+
+  /* monitorul ia aproape toată lățimea dintre rafturi */
+  .monitor { width: calc(100vw - (var(--shelf) * 2) - 16px); padding: 20px 16px 14px; border-radius: 20px; }
+  .bezel   { padding: 12px; border-radius: 14px; }
+  .screen  { border-width: 5px; height: min(64vh, calc(100vh - var(--deskH) - 140px)); }
+
+  /* text & spacing mai compacte */
+  .monitor-title { font-size: clamp(22px, 5.6vw, 28px); margin: 0 0 8px; }
+  .messages-container { padding: 12px; }
+  .bubble { max-width: 82%; font-size: 0.95rem; padding: 8px 12px; }
+
+  /* periferice mai mici și apropiate de marginea biroului */
+  .peripherals { transform: translateY(-4px); gap: 14px; }
+  .keyboard { width: clamp(260px, 64vw, 440px); height: 50px; }
+  .keyboard::before { top: 8px; bottom: 10px; }
+  .mouse { width: 78px; height: 48px; }
+  .mouse::before { height: 24px; }
+
+  /* input compact */
+  .screen-input { padding: 10px 10px 12px; gap: 8px; }
+  .screen-input input { padding: 8px 10px; font-size: 0.95rem; }
+  .screen-input button { padding: 8px 12px; font-size: 0.95rem; }
+}
+
+/* Extra: protecție dacă înălțimea e foarte mică (laptop 13”, landscape phone) */
+@media (max-height: 700px) {
+  .screen { height: calc(100vh - var(--deskH) - 140px); }
+  .monitor-title { margin-bottom: 6px; }
 }
