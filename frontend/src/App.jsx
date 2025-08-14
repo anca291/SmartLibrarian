@@ -1,1 +1,0 @@
-// componenta principala
