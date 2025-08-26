@@ -1,15 +1,19 @@
-import axios from "axios";
+import axios from 'axios';
 
-const API_URL = "http://127.0.0.1:8000";
-
-export async function sendMessage(query) {
+export const sendMessageToBackend = async (message) => {
   try {
-    const response = await axios.post(`${API_URL}/chat`, null, {
-      params: { query }
-    });
+    const response = await axios.post(
+      'http://127.0.0.1:8000/chat?query=' + encodeURIComponent(message)
+    );
     return response.data;
   } catch (error) {
-    console.error("Eroare la API:", error);
-    return { recommendation: "Eroare la server.", full_summary: "" };
+    if (error.response) {
+      console.error(`[BACKEND ERROR]`, error.response.data);
+    } else if (error.request) {
+      console.error(`[NO RESPONSE]`, error.request);
+    } else {
+      console.error(`[AXIOS ERROR]`, error.message);
+    }
+    throw error;
   }
-}
+};
