@@ -1,5 +1,3 @@
-import os
-import openai
 import chromadb
 from chromadb.utils import embedding_functions
 from config import OPENAI_API_KEY, CHROMA_DB_PATH, BOOKS_FILE_TXT

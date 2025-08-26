@@ -1,8 +1,8 @@
 # backend/services/tools_service.py (sau unde ai clasa)
 import json
 import os
-from typing import Any, Dict, List, Union
-from config import BOOKS_FILE_JSON  # păstrează cum ai tu; dacă rulezi cu backend.main, folosește: from backend.config import BOOKS_FILE_JSON
+from typing import Dict, List, Union
+from config import BOOKS_FILE_JSON
 
 TitleT = Union[str, List[str]]
 
