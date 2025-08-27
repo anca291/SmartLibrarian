@@ -1,12 +1,15 @@
-// components/BotMessage.jsx
+
 import React, { useEffect, useRef, useState } from 'react';
-import { ttsFetchAudio } from '../services/api'; // notă: cale relativă corectă
+import { ttsFetchAudio, generateImage } from '../services/api';
 
 export default function BotMessage({ message }) {
   const [loadingTTS, setLoadingTTS] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
   const audioRef = useRef(null);
   const urlRef = useRef(null);
+
+  const [imgUrl, setImgUrl] = useState(null);
+  const [imgLoading, setImgLoading] = useState(false);
 
   const stopAndCleanup = () => {
     const a = audioRef.current;
@@ -63,6 +66,22 @@ export default function BotMessage({ message }) {
     }
   };
 
+ const handleGenerateImage = async () => {
+    if (imgLoading) return;
+    setImgLoading(true);
+    try {
+      // Prompt simplu: “copertă/temă/cheie vizuală” folosind textul recomandării
+      const prompt = `Copertă ilustrată, stil modern, fără text, pentru cartea recomandată: ${message}.
+      Include elemente-cheie ale temei, culori coerente și compoziție clară.`;
+      const url = await generateImage(prompt, { size: "1024x1024" });
+      setImgUrl(url);
+    } catch (e) {
+      console.error('Image generation error:', e);
+    } finally {
+      setImgLoading(false);
+    }
+  };
+
   return (
     <div className="bot-message" style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
       <p style={{ marginRight: '0.5rem' }}>{message}</p>
@@ -72,7 +91,36 @@ export default function BotMessage({ message }) {
               style={{ cursor:'pointer', border:'none', background:'none', fontSize:'18px' }}>
         🎧
       </button>
+
+      <button onClick={handleGenerateImage} disabled={imgLoading}
+                title={imgLoading ? "Se generează imaginea..." : "Generează imagine"}
+                style={{ cursor:'pointer', border:'none', background:'none', fontSize:'18px' }}>
+          🖼️
+        </button>
+
       <audio ref={audioRef} src={audioUrl || undefined} onEnded={stopAndCleanup} />
+       {/* Rând de încărcare pentru imagine */}
+     {imgLoading && (
+      <div className="image-loading-row" role="status" aria-live="polite">
+          <div className="image-spinner" />
+          <span>Se generează imaginea…</span>
+        </div>
+      )}
+
+      {imgUrl && (
+        <div style={{ marginTop: '0.25rem' }}>
+          <img
+            src={imgUrl}
+            alt="Imagine generată pentru carte"
+            style={{ maxWidth:'100%', borderRadius: 12 }}
+            onLoad={() => setImgLoading(false)}   // ascunde spinnerul când e gata
+            onError={() => setImgLoading(false)}  // ascunde și pe eroare
+          />
+        </div>
+      )}
+
+
+
     </div>
   );
 }

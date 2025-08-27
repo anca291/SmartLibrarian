@@ -36,3 +36,13 @@ export async function ttsFetchAudio(text, { voice = "alloy", format = "mp3" } = 
   const buf = await res.arrayBuffer();
   return new Blob([buf], { type: format === "mp3" ? "audio/mpeg" : `audio/${format}` });
 }
+
+export async function generateImage(prompt, { size = "1024x1024" } = {}) {
+  const form = new FormData();
+  form.append("prompt", prompt);
+  form.append("size", size);
+  const res = await fetch("/images/generate", { method: "POST", body: form });
+  if (!res.ok) throw new Error("Image generation failed");
+  const blob = await res.blob(); // image/png
+  return URL.createObjectURL(blob);
+}
