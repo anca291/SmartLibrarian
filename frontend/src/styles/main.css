@@ -285,3 +285,34 @@ body{
   font-style: italic;
   opacity: 0.8;
 }
+
+.bot-message {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.bot-message p {
+  margin-right: 0.5rem;
+  background-color: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.bot-message button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 18px;
+  color: #007bff;
+  transition: color 0.3s ease;
+}
+
+.bot-message button:hover {
+  color: #0056b3;
+}

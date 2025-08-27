@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Message from "./Message";
+import BotMessage from "./BotMessage";
 
 export default function ChatWindow({ messages, onSend }) {
   const [draft, setDraft] = useState("");
@@ -25,7 +26,11 @@ export default function ChatWindow({ messages, onSend }) {
               </div>
             )}
             {messages.map((msg, index) => (
-              <Message key={index} sender={msg.sender} text={msg.text} />
+              msg.sender === "bot" ? (
+                <BotMessage key={index} message={msg.text} />
+              ) : (
+                <Message key={index} sender={msg.sender} text={msg.text} />
+              )
             ))}
           </div>
 
@@ -35,12 +40,14 @@ export default function ChatWindow({ messages, onSend }) {
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Scrie Întrebarea ta..."
             />
+
             <button type="submit">Trimite</button>
           </form>
         </div>
       </div>
 
       <div className="monitor-stand" />
+
     </div>
   );
 }
