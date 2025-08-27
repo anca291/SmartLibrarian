@@ -2,6 +2,7 @@ import logging
 from fastapi import FastAPI
 from routes import chat_routes
 from fastapi.middleware.cors import CORSMiddleware
+from routes.audio_routes import router as audio_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,7 +16,7 @@ app.add_middleware(
 )
 
 app.include_router(chat_routes.router)
-
+app.include_router(audio_router, prefix="/audio", tags=["audio"])
 @app.get("/")
 def root():
     logging.info("[BACKEND] Server is running")

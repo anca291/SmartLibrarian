@@ -1,34 +1,78 @@
-import React, { useState } from 'react';
+// components/BotMessage.jsx
+import React, { useEffect, useRef, useState } from 'react';
+import { ttsFetchAudio } from '../services/api'; // notă: cale relativă corectă
 
 export default function BotMessage({ message }) {
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [loadingTTS, setLoadingTTS] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const audioRef = useRef(null);
+  const urlRef = useRef(null);
 
-  const handleSpeak = () => {
-    if (isSpeaking) return;
-    const utterance = new SpeechSynthesisUtterance(message);
-    setIsSpeaking(true);
-    utterance.onend = () => {
-      setIsSpeaking(false);
-    };
-    window.speechSynthesis.speak(utterance);
+  const stopAndCleanup = () => {
+    const a = audioRef.current;
+    if (a) {
+      a.pause();
+      a.currentTime = 0;
+      a.removeAttribute('src');
+      a.load();
+    }
+    if (urlRef.current) {
+      URL.revokeObjectURL(urlRef.current);
+      urlRef.current = null;
+    }
+    setAudioUrl(null);
   };
 
-  const handleStop = () => {
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
+  useEffect(() => () => stopAndCleanup(), []);
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a || !audioUrl) return;
+
+    let cancelled = false;
+    const onCanPlay = async () => {
+      if (cancelled) return;
+      try { await a.play(); } catch (err) { console.warn('[UI] play() failed', err); }
+    };
+    const onError = () => console.error('[UI] <audio> error:', a?.error);
+
+    a.addEventListener('canplaythrough', onCanPlay, { once: true });
+    a.addEventListener('error', onError, { once: true });
+    a.load();
+
+    return () => {
+      cancelled = true;
+      a.removeEventListener('canplaythrough', onCanPlay);
+      a.removeEventListener('error', onError);
+    };
+  }, [audioUrl]);
+
+  const handleServerTTS = async () => {
+    if (loadingTTS) return;
+    setLoadingTTS(true);
+    try {
+      stopAndCleanup();
+      const blob = await ttsFetchAudio(message, { voice: 'alloy', format: 'mp3' });
+      const url = URL.createObjectURL(blob);
+      urlRef.current = url;
+      setAudioUrl(url);
+    } catch (e) {
+      console.error('Server TTS error:', e);
+    } finally {
+      setLoadingTTS(false);
+    }
   };
 
   return (
     <div className="bot-message" style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
       <p style={{ marginRight: '0.5rem' }}>{message}</p>
-      <button onClick={handleSpeak} title="Read text" style={{ cursor: 'pointer', border: 'none', background: 'none', fontSize: '18px', color: '#007bff', marginRight: '0.5rem' }}>
-        🔊
+      {/* DOAR server TTS */}
+      <button onClick={handleServerTTS} disabled={loadingTTS}
+              title={loadingTTS ? "Se generează audio..." : "Redă cu voce de server"}
+              style={{ cursor:'pointer', border:'none', background:'none', fontSize:'18px' }}>
+        🎧
       </button>
-      {isSpeaking && (
-        <button onClick={handleStop} title="Stop reading" style={{ cursor: 'pointer', border: 'none', background: 'none', fontSize: '18px', color: '#dc3545' }}>
-          ⏹️
-        </button>
-      )}
+      <audio ref={audioRef} src={audioUrl || undefined} onEnded={stopAndCleanup} />
     </div>
   );
 }
