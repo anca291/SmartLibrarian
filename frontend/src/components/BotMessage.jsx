@@ -102,7 +102,7 @@ export default function BotMessage({ message }) {
      {imgLoading && (
       <div className="image-loading-row" role="status" aria-live="polite">
           <div className="image-spinner" />
-          <span>Se generează imaginea…</span>
+          <span>The image is generated…</span>
         </div>
       )}
 
