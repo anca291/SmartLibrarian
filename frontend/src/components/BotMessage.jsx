@@ -70,9 +70,9 @@ export default function BotMessage({ message }) {
     if (imgLoading) return;
     setImgLoading(true);
     try {
-      // Prompt simplu: “copertă/temă/cheie vizuală” folosind textul recomandării
-      const prompt = `Copertă ilustrată, stil modern, fără text, pentru cartea recomandată: ${message}.
-      Include elemente-cheie ale temei, culori coerente și compoziție clară.`;
+
+      const prompt = `Illustrated cover, modern style, without text, for the recommended book: ${message}.
+      It includes key elements of the theme, consistent colors, and clear composition.`;
       const url = await generateImage(prompt, { size: "1024x1024" });
       setImgUrl(url);
     } catch (e) {
@@ -85,21 +85,20 @@ export default function BotMessage({ message }) {
   return (
     <div className="bot-message" style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
       <p style={{ marginRight: '0.5rem' }}>{message}</p>
-      {/* DOAR server TTS */}
       <button onClick={handleServerTTS} disabled={loadingTTS}
-              title={loadingTTS ? "Se generează audio..." : "Redă cu voce de server"}
+              title={loadingTTS ? "Audio is being generated...." : "Play with server voice"}
               style={{ cursor:'pointer', border:'none', background:'none', fontSize:'18px' }}>
         🎧
       </button>
 
       <button onClick={handleGenerateImage} disabled={imgLoading}
-                title={imgLoading ? "Se generează imaginea..." : "Generează imagine"}
+                title={imgLoading ? "The image is generated..." : "Generate image"}
                 style={{ cursor:'pointer', border:'none', background:'none', fontSize:'18px' }}>
           🖼️
         </button>
 
       <audio ref={audioRef} src={audioUrl || undefined} onEnded={stopAndCleanup} />
-       {/* Rând de încărcare pentru imagine */}
+
      {imgLoading && (
       <div className="image-loading-row" role="status" aria-live="polite">
           <div className="image-spinner" />
@@ -111,14 +110,13 @@ export default function BotMessage({ message }) {
         <div style={{ marginTop: '0.25rem' }}>
           <img
             src={imgUrl}
-            alt="Imagine generată pentru carte"
+            alt="Image generated for the book"
             style={{ maxWidth:'100%', borderRadius: 12 }}
-            onLoad={() => setImgLoading(false)}   // ascunde spinnerul când e gata
-            onError={() => setImgLoading(false)}  // ascunde și pe eroare
+            onLoad={() => setImgLoading(false)}
+            onError={() => setImgLoading(false)}
           />
         </div>
       )}
-
 
 
     </div>

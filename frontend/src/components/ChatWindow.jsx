@@ -9,7 +9,7 @@ export default function ChatWindow({ messages, onSend }) {
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
-  // start rec
+
   const startRec = async () => {
     if (recording) return;
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -19,11 +19,11 @@ export default function ChatWindow({ messages, onSend }) {
     mr.onstop = async () => {
       const blob = new Blob(chunksRef.current, { type: "audio/webm" });
       try {
-        const { text } = await sttUploadAudio(blob, "ro"); // sau "en"/detect
+        const { text } = await sttUploadAudio(blob, "ro");
         setDraft((prev) => (prev ? (prev + " " + text) : text));
       } catch (e) {
         console.error("STT error:", e);
-        // opțional: afișează un toast
+
       }
     };
     mr.start();
@@ -31,7 +31,7 @@ export default function ChatWindow({ messages, onSend }) {
     setRecording(true);
   };
 
-  // stop rec
+
   const stopRec = () => {
     if (!recording) return;
     mediaRecorderRef.current.stop();
@@ -71,13 +71,13 @@ export default function ChatWindow({ messages, onSend }) {
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Scrie Întrebarea ta..."
+          placeholder="Write here..."
         />
         <button type="button" onClick={recording ? stopRec : startRec}
-                title={recording ? "Oprire înregistrare" : "Înregistrează"}>
+                title={recording ? "Stop recording" : "Recording"}>
           {recording ? "⏺️ Stop" : "🎙️ Voice"}
         </button>
-        <button type="submit">Trimite</button>
+        <button type="submit">Send</button>
       </form>
         </div>
       </div>

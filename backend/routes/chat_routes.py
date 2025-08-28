@@ -5,8 +5,9 @@ import logging
 import re
 from typing import Dict, List, Literal
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from openai import OpenAI, OpenAIError
+from pydantic import BaseModel
 
 from services.embeddings_service import EmbeddingsService
 from services.gpt_service import GPTService
@@ -137,8 +138,13 @@ def ping() -> Dict[str, str]:
     return {"status": "ok"}
 
 
+class ChatRequest(BaseModel):
+    query: str
+
+
 @router.post("/chat")
-def chat(query: str = Query(..., min_length=1)) -> Dict[str, str]:
+def chat(request: ChatRequest) -> Dict[str, str]:
+    query = request.query
     if not query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
 

@@ -17,10 +17,10 @@ export default function InputBox({ onSend }) {
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Scrie întrebarea ta..."
+          placeholder="Write here.."
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
-        <button onClick={handleSend}>Trimite</button>
+        <button onClick={handleSend}>Send</button>
       </div>
     </div>
   );

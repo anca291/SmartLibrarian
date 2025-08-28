@@ -1,6 +1,6 @@
 export default function Message({ sender, text }) {
-  // dacă textul este "Botul scrie..." => adaugă clasa "loading"
-  const isLoading = text.includes("Botul scrie...");
+
+  const isLoading = text.includes("Bot is thinking...");
   return (
     <div className={`message ${sender} ${isLoading ? "loading" : ""}`}>
       <div className="bubble">{text}</div>

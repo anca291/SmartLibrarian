@@ -3,7 +3,8 @@ import axios from 'axios';
 export const sendMessageToBackend = async (message) => {
   try {
     const response = await axios.post(
-      'http://127.0.0.1:8000/chat?query=' + encodeURIComponent(message)
+      'http://127.0.0.1:8000/chat',
+      { query: message }
     );
     return response.data;
   } catch (error) {
@@ -17,6 +18,7 @@ export const sendMessageToBackend = async (message) => {
     throw error;
   }
 };
+
 export async function sttUploadAudio(blob, language) {
   const form = new FormData();
   form.append("file", new File([blob], "speech.webm", { type: "audio/webm" }));

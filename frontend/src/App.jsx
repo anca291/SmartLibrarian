@@ -9,35 +9,20 @@ export default function App() {
   const handleSend = async (userMessage) => {
     if (!userMessage?.trim()) return;
 
-    console.log("[FRONTEND] User sends message:", userMessage);
 
-    // Add user's message
     setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
 
-    // Add temporary loading message "Bot is typing..."
     const loadingMessage = { sender: "bot", text: "🤖 Bot is typing..." };
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
-      console.log("[FRONTEND] Sending request to backend...");
-      const botResponse = await sendMessageToBackend(userMessage);
-      console.log("[FRONTEND] Received response from backend:", botResponse);
+      const { recommendation, full_summary } = await sendMessageToBackend(userMessage);
+      const fullText = `${recommendation}${full_summary ? `\n\nSummary:\n${full_summary}` : ""}`;
 
-    let fullText = botResponse.recommendation;
-      if (botResponse.full_summary) {
-        fullText += `\n\nRezumat complet:\n${botResponse.full_summary}`;
-      }
-
-      setMessages((prev) => [
-        ...prev.slice(0, -1),
-        { sender: "bot", text: fullText }
-      ]);
+      setMessages((prev) => [...prev.slice(0, -1), { sender: "bot", text: fullText }]);
     } catch (error) {
-      console.error("[FRONTEND] Error sending request:", error);
-      setMessages((prev) => [
-        ...prev.slice(0, -1),
-        { sender: "bot", text: "❌ Server error. Please try again." }
-      ]);
+      console.error("[FRONTEND] Error:", error);
+      setMessages((prev) => [...prev.slice(0, -1), { sender: "bot", text: "❌ Server error. Please try again." }]);
     }
   };
 
