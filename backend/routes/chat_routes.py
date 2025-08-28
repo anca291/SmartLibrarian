@@ -8,11 +8,9 @@ from typing import Dict, List, Literal
 from fastapi import APIRouter, HTTPException, Query
 from openai import OpenAI, OpenAIError
 
-# Internal services
 from services.embeddings_service import EmbeddingsService
 from services.gpt_service import GPTService
 from services.tools_service import ToolsService
-# Local inappropriate-language filter
 from utils.badwords import badwords
 
 try:
@@ -28,7 +26,6 @@ if not logger.handlers:
 
 client = OpenAI()
 CHAT_MODEL = "gpt-4o-mini"
-
 router = APIRouter()
 
 embeddings_service = EmbeddingsService()
@@ -39,7 +36,6 @@ Lang = Literal["ro", "en"]
 
 
 def detect_language(text: str) -> Lang:
-    """Detect RO/EN; prefer langdetect, else heuristic."""
     if _langdetect_detect:
         try:
             code = _langdetect_detect(text)
@@ -53,7 +49,6 @@ def detect_language(text: str) -> Lang:
 
 
 def classify_intent(query: str, lang: Lang) -> Literal["small_talk", "book_request", "other"]:
-    """Classify user intent with LLM, fallback to regex greetings."""
     system = (
         "Return ONLY a JSON object with a single key `intent` whose value is one of: "
         "`small_talk`,`book_request`,`other`. "
@@ -77,12 +72,10 @@ def classify_intent(query: str, lang: Lang) -> Literal["small_talk", "book_reque
     except OpenAIError as e:
         logger.warning("Intent classification error: %s", e)
 
-    # fallback using regex
     greeting_regex = r"\b(bun[aă]|salut(are)?|hei|ceau|ce\s+faci|ce\s+mai\s+faci)\b" if lang == "ro" \
         else r"\b(hi|hello|hey|how\s+are\s+you|what's\s+up)\b"
     if re.search(greeting_regex, query.strip(), re.IGNORECASE):
         return "small_talk"
-
     return "other"
 
 
@@ -105,12 +98,10 @@ def get_friendly_reply(query: str, lang: Lang) -> str:
         return (resp.choices[0].message.content or "").strip()
     except OpenAIError as e:
         logger.error("Small-talk generation failed: %s", e)
-        return "Salut! Ce ți-ar plăcea să citești astăzi?" if lang == "ro" \
-            else "Hi! What would you like to read today?"
+        return "Salut! Ce ți-ar plăcea să citești astăzi?" if lang == "ro" else "Hi! What would you like to read today?"
 
 
 def get_semantic_results(query: str) -> Dict[str, any]:
-    """Search for books based on the query using embeddings_service."""
     try:
         results = embeddings_service.search_books(query)
         logger.info("Embeddings results: %s", {k: v for k, v in results.items() if k != "documents"})
@@ -121,7 +112,6 @@ def get_semantic_results(query: str) -> Dict[str, any]:
 
 
 def get_gpt_recommendation(context: str, query: str) -> str:
-    """Obtain recommendation from GPT service."""
     try:
         return gpt_service.get_recommendation(context, query)
     except OpenAIError as e:
@@ -130,7 +120,6 @@ def get_gpt_recommendation(context: str, query: str) -> str:
 
 
 def get_full_summary(query: str, titles: List[str], lang: Lang) -> str:
-    """Obtain full summary based on the query and titles if required."""
     qlow = query.lower()
     wants_full = any(k in qlow for k in ["rezumat complet", "rezumatul complet", "full summary", "complete summary"])
     full_summary = ""
@@ -156,7 +145,6 @@ def chat(query: str = Query(..., min_length=1)) -> Dict[str, str]:
     lang = detect_language(query)
     logger.info("Received query (%s): %s", lang, query)
 
-    # 1) Inappropriate language filter — STOP before embeddings/LLM
     if badwords.contains(query, "ro" if lang == "ro" else "en"):
         masked = badwords.mask(query, "ro" if lang == "ro" else "en")
         logger.warning("Blocked query due to inappropriate language: %s", masked)
@@ -167,18 +155,15 @@ def chat(query: str = Query(..., min_length=1)) -> Dict[str, str]:
         return {"recommendation": recommendation, "full_summary": ""}
     logger.info("Query passed inappropriate language filter.")
 
-    # 2) Intent classification
     intent = classify_intent(query, lang)
     if intent == "small_talk":
         return {"recommendation": get_friendly_reply(query, lang), "full_summary": ""}
 
-    # 3) Semantic retrieval (ChromaDB)
     results = get_semantic_results(query)
     if not results or not results.get("ids"):
         logger.info("No results from semantic search.")
         recommendation = (
-            "Nu am găsit potriviri. Încearcă un autor, gen sau temă."
-            if lang == "ro"
+            "Nu am găsit potriviri. Încearcă un autor, gen sau temă." if lang == "ro"
             else "I couldn't find a match. Try an author, genre, or theme."
         )
         return {"recommendation": recommendation, "full_summary": ""}
@@ -187,10 +172,8 @@ def chat(query: str = Query(..., min_length=1)) -> Dict[str, str]:
     readable_titles: List[str] = results.get("titles") or []
     logger.info("Selected titles: %s", readable_titles)
 
-    # 4) GPT recommendation
     recommendation = get_gpt_recommendation(context, query)
 
-    # 5) Full summary if requested
     full_summary = get_full_summary(query, readable_titles, lang)
 
     return {"recommendation": recommendation, "full_summary": full_summary}
